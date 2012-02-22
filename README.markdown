@@ -5,6 +5,13 @@ A Python module to manipulate NTFS [hard
 links](http://en.wikipedia.org/wiki/Hard_link) and
 [junctions](http://en.wikipedia.org/wiki/NTFS_junction_point).
 
+Requirements
+------------
+
+Python 2.5 through 2.7. No further dependencies, since we use
+[ctypes](http://docs.python.org/library/ctypes.html) to interact with Win32.
+Not tested with Python 3.
+
 License
 -------
 
