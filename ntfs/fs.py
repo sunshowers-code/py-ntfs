@@ -1,6 +1,6 @@
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this file,
-# You can obtain one at http://mozilla.org/MPL/2.0/.
+# Copyright (c) 2012, the Mozilla Foundation. All rights reserved.
+# Use of this source code is governed by the Simplified BSD License which can
+# be found in the LICENSE file.
 
 import ctypes
 from ctypes import POINTER, WinError, sizeof, byref
