@@ -12,7 +12,7 @@ long_description = (
     'Detailed Documentation\n'
     '**********************\n'
     + '\n' +
-    read('README.markdown')
+    read('README.rst')
     + '\n' +
     'Change history\n'
     '**************\n'
