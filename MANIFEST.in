@@ -1,3 +1,3 @@
 include CONTRIBUTORS.txt
 include CHANGES.txt
-include README.markdown
+include README.rst
