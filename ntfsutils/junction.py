@@ -5,7 +5,7 @@
 # Python module to create, delete and get the target of junctions on
 # Windows.
 
-__all__ = ["create", "readlink", "unlink"]
+__all__ = ["create", "readlink", "unlink", "isjunction"]
 
 import os
 import fs
