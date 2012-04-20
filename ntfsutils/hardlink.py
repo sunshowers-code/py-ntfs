@@ -19,7 +19,7 @@ def create(source, link_name):
     Creates a hardlink at link_name referring to the same file as source.
     """
     res = CreateHardLink(link_name, source, None)
-    if rv == 0:
+    if res == 0:
         raise WinError("Couldn't create hardlink from %s to %s" %
             (source, link_name))
 
