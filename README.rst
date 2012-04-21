@@ -9,6 +9,8 @@ Requirements
 Python 2.5 through 2.7 on Windows. No further dependencies, since we use `ctypes`_ 
 to interact with Win32.
 
+This is a pure Python module.
+
 License
 -------
 
