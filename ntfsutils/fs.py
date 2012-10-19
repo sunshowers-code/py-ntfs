@@ -95,6 +95,7 @@ def getfileinfo(path):
         raise WinError()
     info = BY_HANDLE_FILE_INFORMATION()
     rv = GetFileInformationByHandle(hfile, info)
+    CloseHandle(hfile)
     if rv == 0:
         raise WinError()
     return info
