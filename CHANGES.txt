@@ -1,3 +1,11 @@
+0.1.2 (2013-01-25)
+==================
+
+- Call CloseHandle after GetFileInformationByHandle.
+  [barryp]
+- Add missing LICENSE file to manifest.
+  [pombredanne]
+
 0.1.1 (2012-04-20)
 ==================
 
