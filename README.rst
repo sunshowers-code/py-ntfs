@@ -14,7 +14,7 @@ This is a pure Python module.
 License
 -------
 
-(c) 2012 the Mozilla Foundation, licensed under the Simplified BSD License.
+(c) 2012 the Mozilla Foundation and others, licensed under the Simplified BSD License.
 See the LICENSE file for details.
 
 .. _hard links: https://en.wikipedia.org/wiki/Hard_link
