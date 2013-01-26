@@ -1,2 +1,4 @@
 - Siddharth Agarwal [sid0]
 - Roman Lacko [rlacko]
+- Barry Pederson [barryp]
+- Philippe Ombredanne [pombredanne]
