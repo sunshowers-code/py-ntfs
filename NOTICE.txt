@@ -1,0 +1,2 @@
+As part copyright owner of this software, Siddharth Agarwal is required to provide the following notice:
+I am providing code in this repository to you under an open source license. Because this is my personal repository, the license you receive is from me and not from my employer (Facebook).
