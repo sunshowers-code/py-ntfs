@@ -20,8 +20,7 @@ def create(source, link_name):
     """
     res = CreateHardLink(link_name, source, None)
     if res == 0:
-        raise WinError("Couldn't create hardlink from %s to %s" %
-            (source, link_name))
+        raise WinError()
 
 def samefile(path1, path2):
     """

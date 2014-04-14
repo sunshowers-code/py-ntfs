@@ -127,7 +127,7 @@ def create(source, link_name):
         None)
     try:
         if hlink == fs.INVALID_HANDLE_VALUE:
-            raise WinError(descr="Couldn't open directory to create junction")
+            raise WinError()
 
         srcvolpath = unparsed_convert(source)
         (junctioninfo, infolen) = new_junction_reparse_buffer(srcvolpath)
@@ -144,7 +144,7 @@ def create(source, link_name):
             None)
 
         if res == 0:
-            raise WinError(descr="Setting directory as junction failed")
+            raise WinError()
         success = True
     finally:
         if hlink != fs.INVALID_HANDLE_VALUE:
@@ -162,7 +162,7 @@ def readlink(path):
         fs.FILE_FLAG_OPEN_REPARSE_POINT | fs.FILE_FLAG_BACKUP_SEMANTICS,
         None)
     if hlink == fs.INVALID_HANDLE_VALUE:
-        raise WinError(descr=("%s: couldn't open directory to read junction" % path))
+        raise WinError()
     
     try:
         (junctioninfo, infolen) = new_junction_reparse_buffer()
@@ -178,7 +178,7 @@ def readlink(path):
             None)
         
         if res == 0:
-            raise WinError(descr="Getting junction info failed")
+            raise WinError()
 
         return unparsed_unconvert(junctioninfo.SubstituteNameBuffer)
     finally:
