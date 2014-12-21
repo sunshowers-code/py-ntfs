@@ -45,6 +45,12 @@ class BY_HANDLE_FILE_INFORMATION(ctypes.Structure):
                 ("nNumberOfLinks", DWORD),
                 ("nFileIndexHigh", DWORD),
                 ("nFileIndexLow", DWORD)]
+                
+# https://msdn.microsoft.com/en-us/library/windows/desktop/ms679360
+# for debugging
+GetLastError = ctypes.windll.kernel32.GetLastError
+GetLastError.argtypes = []
+GetLastError.restype = DWORD
 
 # http://msdn.microsoft.com/en-us/library/windows/desktop/aa363858
 CreateFile = ctypes.windll.kernel32.CreateFileW
@@ -84,6 +90,12 @@ DeviceIoControl.restype = BOOL
 CloseHandle = ctypes.windll.kernel32.CloseHandle
 CloseHandle.argtypes = [HANDLE]
 CloseHandle.restype = BOOL
+
+# http://msdn.microsoft.com/en-us/library/windows/desktop/aa363866
+CreateSymbolicLink = ctypes.windll.kernel32.CreateSymbolicLinkW
+CreateSymbolicLink.argtypes = (ctypes.c_wchar_p, ctypes.c_wchar_p, DWORD)
+CreateSymbolicLink.restype = BOOL
+
 
 def getfileinfo(path):
     """
