@@ -1,7 +1,7 @@
 ntfsutils
 =========
 
-A Python module to manipulate NTFS `hard links`_ and `junctions`_.
+A Python module to manipulate NTFS `hard links`_ and `junctions`_ and `symbolic links`_.
 
 Requirements
 ------------
@@ -19,4 +19,5 @@ See the LICENSE file for details.
 
 .. _hard links: https://en.wikipedia.org/wiki/Hard_link
 .. _junctions: https://en.wikipedia.org/wiki/NTFS_junction_point
+.. _symbolic links: http://en.wikipedia.org/wiki/NTFS_symbolic_link
 .. _ctypes: http://docs.python.org/library/ctypes.html

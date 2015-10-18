@@ -6,7 +6,7 @@
 
 __all__ = ["create", "samefile"]
 
-import fs
+from . import fs
 import ctypes
 from ctypes import WinError
 from ctypes.wintypes import BOOL
