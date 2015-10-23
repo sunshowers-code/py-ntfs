@@ -41,7 +41,7 @@ def create(source, link_name, ignore_validate = False):
         else:
             raise WinError()
 
-def issymboliclink(path):
+def issymlink(path):
     try:
         reparseinfo = junction.readreparseinfo(path)
     except OSError as e:
@@ -58,7 +58,7 @@ def issymboliclink(path):
     return bool(attrs & fs.FILE_ATTRIBUTE_REPARSE_POINT)
     
 def readlink(path):
-    if not issymboliclink(path):
+    if not issymlink(path):
         raise Exception("%s does not exist or is not a symbolic link" % path)
 
     reparseinfo = junction.readreparseinfo(path)
