@@ -46,6 +46,11 @@ class BY_HANDLE_FILE_INFORMATION(ctypes.Structure):
                 ("nFileIndexHigh", DWORD),
                 ("nFileIndexLow", DWORD)]
 
+# https://msdn.microsoft.com/en-us/library/windows/desktop/ms679360
+GetLastError = ctypes.windll.kernel32.GetLastError
+GetLastError.argtypes = []
+GetLastError.restype = DWORD
+
 # http://msdn.microsoft.com/en-us/library/windows/desktop/aa363858
 CreateFile = ctypes.windll.kernel32.CreateFileW
 CreateFile.argtypes = [ctypes.c_wchar_p, DWORD, DWORD, ctypes.c_void_p,
