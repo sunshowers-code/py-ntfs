@@ -226,9 +226,9 @@ def showreparseinfo(reparseinfo):
     ]
     for key in keys:
         val = getattr(reparseinfo, key)
-        print("%s\t:%s" % (key, str(val)))
+        print("%s\t:%r" % (key, str(val)))
 
     extra_keys = ["readable_PrintNameBuffer", "readable_SubstituteNameBuffer"]
     for key in extra_keys:
         val = getattr(reparseinfo, key)
-        print("%s\t:%s" % (key, str(val)))
+        print("%s\t:%r" % (key, str(val)))

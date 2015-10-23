@@ -9,7 +9,13 @@ from ntfsutils import junction
 
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 
-class create_for_dir_Test(unittest.TestCase):
+class SymLinkTest(unittest.TestCase):
+    def assertSymlinkPrivilegeNotHeldException(self, e):
+        self.assertEqual(e.__class__, OSError)
+        if e.winerror != symlink.ERROR_PRIVILEGE_NOT_HELD:
+            self.fail()
+
+class create_for_dir_Test(SymLinkTest):
     def setUp(self):
         self.source = os.path.join(BASE_PATH, 'data')
         self.link_name =  os.path.join(BASE_PATH, 'tmp-data')
@@ -24,12 +30,12 @@ class create_for_dir_Test(unittest.TestCase):
         try:
             symlink.create(self.source, self.link_name)        
             self.assertEqual(True, os.path.isdir(self.link_name))
-        except symlink.SymLinkPermissionError as e:
-            print(e.message)
-        except:
+        except OSError as e:
+            self.assertSymlinkPrivilegeNotHeldException(e)
+        except Exception as e:
             self.fail()
-            
-class create_for_file_Test(unittest.TestCase):
+
+class create_for_file_Test(SymLinkTest):
     def setUp(self):
         self.source = os.path.join(BASE_PATH, 'data', 'dummy.txt')
         self.invalid_source = os.path.join(BASE_PATH, 'not-exist')
@@ -56,12 +62,12 @@ class create_for_file_Test(unittest.TestCase):
         try:
             symlink.create(self.source, self.link_name)
             self.assertEqualFile(self.source, self.link_name)
-        except symlink.SymLinkPermissionError as e:
-            print(e.message)
+        except OSError as e:
+            self.assertSymlinkPrivilegeNotHeldException(e)
         except:
             self.fail()
 
-class issymlink_Test(unittest.TestCase):
+class issymlink_Test(SymLinkTest):
     def setUp(self):
         self.source_file = os.path.join(BASE_PATH, 'data', 'dummy.txt')
         self.source_dir = os.path.join(BASE_PATH, 'data')
@@ -82,7 +88,8 @@ class issymlink_Test(unittest.TestCase):
     def test_for_dir(self):
         try:
             symlink.create(self.source_dir, self.link_name_dir)
-        except symlink.SymLinkPermissionError as e:
+        except OSError as e:
+            self.assertSymlinkPrivilegeNotHeldException(e)
             return
         except:
             self.fail()    
@@ -91,7 +98,8 @@ class issymlink_Test(unittest.TestCase):
     def test_for_file(self):
         try:
             symlink.create(self.source_file, self.link_name_file)
-        except symlink.SymLinkPermissionError as e:
+        except OSError as e:
+            self.assertSymlinkPrivilegeNotHeldException(e)
             return
         except:
             self.fail()    
@@ -106,7 +114,7 @@ class issymlink_Test(unittest.TestCase):
     def test_for_not_exist(self):
         self.assertFalse(symlink.issymlink("invalid-path"))
 
-class readlink_for_file_Test(unittest.TestCase):
+class readlink_for_file_Test(SymLinkTest):
     def setUp(self):
         self.source = os.path.join(BASE_PATH, 'data', 'dummy.txt')
         self.link_name =  os.path.join(BASE_PATH, 'data', 'tmp-data.txt')
@@ -122,8 +130,8 @@ class readlink_for_file_Test(unittest.TestCase):
             symlink.create(self.source, self.link_name)
             actual = symlink.readlink(self.link_name)
             self.assertEqual(actual, self.source)
-        except symlink.SymLinkPermissionError as e:
-            print(e.message)
+        except OSError as e:
+            self.assertSymlinkPrivilegeNotHeldException(e)
         except:
             self.fail()
 
@@ -133,12 +141,12 @@ class readlink_for_file_Test(unittest.TestCase):
             symlink.create(source, self.link_name, True)
             actual = symlink.readlink(self.link_name)
             self.assertEqual(actual, source)
-        except symlink.SymLinkPermissionError as e:
-            print(e.message)
+        except OSError as e:
+            self.assertSymlinkPrivilegeNotHeldException(e)
         except:
             self.fail()
 
-class readlink_for_dir_Test(unittest.TestCase):
+class readlink_for_dir_Test(SymLinkTest):
     def setUp(self):
         self.source = os.path.join(BASE_PATH, 'data')
         self.link_name =  os.path.join(BASE_PATH, 'tmp-data')
@@ -158,8 +166,8 @@ class readlink_for_dir_Test(unittest.TestCase):
             symlink.create(self.source, self.link_name)
             actual = symlink.readlink(self.link_name)
             self.assertEqual(actual, self.source)
-        except symlink.SymLinkPermissionError as e:
-            print(e.message)
+        except OSError as e:
+            self.assertSymlinkPrivilegeNotHeldException(e)
         except:
             self.fail()
 
@@ -169,12 +177,12 @@ class readlink_for_dir_Test(unittest.TestCase):
             symlink.create(source, self.link_name, True)
             actual = symlink.readlink(self.link_name)
             self.assertEqual(actual, source)
-        except symlink.SymLinkPermissionError as e:
-            print(e.message)
+        except OSError as e:
+            self.assertSymlinkPrivilegeNotHeldException(e)
         except:
             self.fail()
 
-class readlink_for_not_symlink_Test(unittest.TestCase):
+class readlink_for_not_symlink_Test(SymLinkTest):
     def setUp(self):
         self.filename = os.path.join(BASE_PATH, 'data', 'dummy.txt')
 

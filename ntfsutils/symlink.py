@@ -4,7 +4,7 @@
 
 # Library to deal with symbolic links
 
-__all__ = ["create"]
+__all__ = ["create", "readlink", "issymlink"]
 
 import os
 from . import fs
@@ -16,9 +16,6 @@ from ctypes import WinError
 
 ERROR_PRIVILEGE_NOT_HELD = 1314
 ERROR_NOT_A_REPARSE_POINT = 4390
-
-class SymLinkPermissionError(Exception):
-    pass
 
 def create(source, link_name, ignore_validate = False):
     """
@@ -35,11 +32,7 @@ def create(source, link_name, ignore_validate = False):
     flags = 1 if os.path.isdir(source) else 0
     res = CreateSymbolicLink(link_name, source, flags)
     if res == 0:
-        error_code = GetLastError() 
-        if error_code == ERROR_PRIVILEGE_NOT_HELD:
-            raise SymLinkPermissionError("no permission, error code : %d" % error_code)
-        else:
-            raise WinError()
+        raise WinError()
 
 def issymlink(path):
     try:
@@ -63,18 +56,19 @@ def readlink(path):
 
     reparseinfo = junction.readreparseinfo(path)
     name_buffer = reparseinfo.readable_SubstituteNameBuffer
-
-    if name_buffer[0] == chr(1) and name_buffer[1] == chr(0):
+    
+    magic = name_buffer[0:2]
+    if magic == '\x01\x00':
         # relative path
         # example : \x01\x00dummy.txtdummy.txt
         total_len = len(name_buffer)
         return name_buffer[2:(total_len-2)//2 + 2]
 
-    elif name_buffer[0] == chr(0) and name_buffer[1] == chr(0):
-        # absoulte path
+    elif magic == '\x00\x00':
+        # absolute path
         # example : \x00\x00c:\devel\ntfs\tests\data\dummy.txt\??\c:\devel\ntfs\tests\data\dummy.txt
         total_len = len(name_buffer)
         return name_buffer[2:(total_len-6)//2 + 2]
 
     else:
-        raise Exception("unknown name buffer format : %s" % name_buffer)
+        raise Exception("unknown name buffer format : %r" % name_buffer)
