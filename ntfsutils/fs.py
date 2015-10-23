@@ -90,6 +90,11 @@ CloseHandle = ctypes.windll.kernel32.CloseHandle
 CloseHandle.argtypes = [HANDLE]
 CloseHandle.restype = BOOL
 
+# http://msdn.microsoft.com/en-us/library/windows/desktop/aa363866
+CreateSymbolicLink = ctypes.windll.kernel32.CreateSymbolicLinkW
+CreateSymbolicLink.argtypes = (ctypes.c_wchar_p, ctypes.c_wchar_p, DWORD)
+CreateSymbolicLink.restype = BOOL
+
 def getfileinfo(path):
     """
     Return information for the file at the given path. This is going to be a
