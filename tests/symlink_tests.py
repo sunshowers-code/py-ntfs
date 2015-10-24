@@ -10,185 +10,127 @@ from ntfsutils import junction
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 
 class SymLinkTest(unittest.TestCase):
+    def setUp(self):
+        self.source_dir = os.path.join(BASE_PATH, 'data')
+        self.link_name_dir =  os.path.join(BASE_PATH, 'tmp-data')
+
+        self.source_file = os.path.join(BASE_PATH, 'data', 'dummy.txt')
+        self.link_name_file =  os.path.join(BASE_PATH, 'data', 'tmp-data.txt')
+
+        self.not_exist_dir = os.path.join(BASE_PATH, 'not-exist')
+        self.not_exist_file = os.path.join(BASE_PATH, 'not-exist.txt')
+
+        self.invalid_path = "dummy:\\dummy"
+
+    def tearDown(self):
+        for elem in [self.link_name_dir, self.link_name_file]:
+            try:
+                os.removedirs(elem)
+            except OSError:
+                pass
+            try:
+                os.remove(elem)
+            except OSError:
+                pass
+
     def assertSymlinkPrivilegeNotHeldException(self, e):
         self.assertEqual(e.__class__, OSError)
         if e.winerror != symlink.ERROR_PRIVILEGE_NOT_HELD:
             self.fail()
 
-class create_for_dir_Test(SymLinkTest):
-    def setUp(self):
-        self.source = os.path.join(BASE_PATH, 'data')
-        self.link_name =  os.path.join(BASE_PATH, 'tmp-data')
-        
-    def tearDown(self):
-        try:
-            os.removedirs(self.link_name)
-        except OSError:
-            pass
-    
-    def test_run(self):
-        try:
-            symlink.create(self.source, self.link_name)        
-            self.assertEqual(True, os.path.isdir(self.link_name))
-        except OSError as e:
-            self.assertSymlinkPrivilegeNotHeldException(e)
-        except Exception as e:
-            self.fail()
-
-class create_for_file_Test(SymLinkTest):
-    def setUp(self):
-        self.source = os.path.join(BASE_PATH, 'data', 'dummy.txt')
-        self.invalid_source = os.path.join(BASE_PATH, 'not-exist')
-        self.link_name =  os.path.join(BASE_PATH, 'data', 'tmp-data.txt')
-    
-    def tearDown(self):
-        try:
-            os.remove(self.link_name)
-        except OSError:
-            pass
-        
-    def test_source_not_exist(self):
-        with self.assertRaises(Exception) as cm:
-            symlink.create(self.invalid_source, self.link_name)
-            
     def assertEqualFile(self, filepath_a, filepath_b):
         with open(filepath_a, "rb") as f:
             content_a = f.read()
         with open(filepath_b, "rb") as f:
             content_b = f.read()
         self.assertEqual(content_a, content_b)
-            
-    def test_create(self):
+
+    def assertBrokenLink(self, filepath):
+        self.assertEqual(os.path.exists(filepath), False)
+        self.assertEqual(os.path.lexists(filepath), True)
+
+    def createSymlink(self, source, link_name):
         try:
-            symlink.create(self.source, self.link_name)
-            self.assertEqualFile(self.source, self.link_name)
+            symlink.create(source, link_name)    
         except OSError as e:
             self.assertSymlinkPrivilegeNotHeldException(e)
-        except:
+            self.skipTest("symlink privilege not held")
+        except Exception as e:
             self.fail()
 
-class issymlink_Test(SymLinkTest):
-    def setUp(self):
-        self.source_file = os.path.join(BASE_PATH, 'data', 'dummy.txt')
-        self.source_dir = os.path.join(BASE_PATH, 'data')
-
-        self.link_name_file =  os.path.join(BASE_PATH, 'data', 'tmp-data.txt')
-        self.link_name_dir =  os.path.join(BASE_PATH, 'tmp-data')
-
-    def tearDown(self):
-        try:
-            os.removedirs(self.link_name_dir)
-        except OSError:
-            pass
-        try:
-            os.remove(self.link_name_file)
-        except OSError:
-            pass
-
+class create_Test(SymLinkTest):    
     def test_for_dir(self):
-        try:
-            symlink.create(self.source_dir, self.link_name_dir)
-        except OSError as e:
-            self.assertSymlinkPrivilegeNotHeldException(e)
-            return
-        except:
-            self.fail()    
-        self.assertTrue(symlink.issymlink(self.link_name_dir))
+        self.createSymlink(self.source_dir, self.link_name_dir)        
+        self.assertEqual(True, os.path.isdir(self.link_name_dir))
 
     def test_for_file(self):
-        try:
-            symlink.create(self.source_file, self.link_name_file)
-        except OSError as e:
-            self.assertSymlinkPrivilegeNotHeldException(e)
-            return
-        except:
-            self.fail()    
+        self.createSymlink(self.source_file, self.link_name_file)
+        self.assertEqualFile(self.source_file, self.link_name_file)
+
+    def test_for_not_exist_path(self):
+        self.createSymlink(self.not_exist_file, self.link_name_file)
+        self.assertBrokenLink(self.link_name_file)
+
+    def test_for_invalid_path(self):
+        self.createSymlink(self.invalid_path, self.link_name_file)
+        self.assertBrokenLink(self.link_name_file)
+
+class issymlink_Test(SymLinkTest):
+    def test_for_dir_symlink(self):
+        self.createSymlink(self.source_dir, self.link_name_dir)
+        self.assertTrue(symlink.issymlink(self.link_name_dir))
+
+    def test_for_file_symlink(self):
+        self.createSymlink(self.source_file, self.link_name_file)
         self.assertTrue(symlink.issymlink(self.link_name_file))
 
-    def test_for_not_link_file(self):  
+    def test_for_real_file(self):  
         self.assertFalse(symlink.issymlink(self.source_file))
-    
-    def test_for_not_link_dir(self):
+
+    def test_for_real_dir(self):
         self.assertFalse(symlink.issymlink(self.source_dir))
 
-    def test_for_not_exist(self):
-        self.assertFalse(symlink.issymlink("invalid-path"))
+    def test_for_not_exist_path(self):
+        self.assertFalse(symlink.issymlink(self.invalid_path))
 
-class readlink_for_file_Test(SymLinkTest):
-    def setUp(self):
-        self.source = os.path.join(BASE_PATH, 'data', 'dummy.txt')
-        self.link_name =  os.path.join(BASE_PATH, 'data', 'tmp-data.txt')
+class readlink_Test(SymLinkTest):
+    def test_absolute_path_for_file_symlink(self):
+        self.createSymlink(self.source_file, self.link_name_file)        
+        actual = symlink.readlink(self.link_name_file)
+        self.assertEqual(actual, self.source_file)
 
-    def tearDown(self):
-        try:
-            os.remove(self.link_name)
-        except OSError:
-            pass
-
-    def test_absolute_path(self):
-        try:
-            symlink.create(self.source, self.link_name)
-            actual = symlink.readlink(self.link_name)
-            self.assertEqual(actual, self.source)
-        except OSError as e:
-            self.assertSymlinkPrivilegeNotHeldException(e)
-        except:
-            self.fail()
-
-    def test_relative_path(self):
+    def test_relative_path_for_file_symlink(self):
         source = "dummy.txt"
-        try:
-            symlink.create(source, self.link_name, True)
-            actual = symlink.readlink(self.link_name)
-            self.assertEqual(actual, source)
-        except OSError as e:
-            self.assertSymlinkPrivilegeNotHeldException(e)
-        except:
-            self.fail()
+        self.createSymlink(source, self.link_name_file)        
+        actual = symlink.readlink(self.link_name_file)
+        self.assertEqual(actual, source)
 
-class readlink_for_dir_Test(SymLinkTest):
-    def setUp(self):
-        self.source = os.path.join(BASE_PATH, 'data')
-        self.link_name =  os.path.join(BASE_PATH, 'tmp-data')
+    def test_absolute_path_for_dir_symlink(self):
+        self.createSymlink(self.source_dir, self.link_name_dir)
+        actual = symlink.readlink(self.link_name_dir)
+        self.assertEqual(actual, self.source_dir)
 
-    def tearDown(self):
-        try:
-            os.removedirs(self.link_name)
-        except OSError:
-            pass
-        try:
-            os.remove(self.link_name)
-        except OSError:
-            pass
+    def test_relative_path_for_dir_symlink(self):
+        source = "dummy-dir"
+        self.createSymlink(source, self.link_name_dir)
+        actual = symlink.readlink(self.link_name_dir)
+        self.assertEqual(actual, source)
 
-    def test_absolute_path(self):
-        try:
-            symlink.create(self.source, self.link_name)
-            actual = symlink.readlink(self.link_name)
-            self.assertEqual(actual, self.source)
-        except OSError as e:
-            self.assertSymlinkPrivilegeNotHeldException(e)
-        except:
-            self.fail()
-
-    def test_relative_path(self):
-        source = "tmp-data"
-        try:
-            symlink.create(source, self.link_name, True)
-            actual = symlink.readlink(self.link_name)
-            self.assertEqual(actual, source)
-        except OSError as e:
-            self.assertSymlinkPrivilegeNotHeldException(e)
-        except:
-            self.fail()
-
-class readlink_for_not_symlink_Test(SymLinkTest):
-    def setUp(self):
-        self.filename = os.path.join(BASE_PATH, 'data', 'dummy.txt')
-
-    def test_raise_exc(self):
+    def test_for_real_file(self):
         with self.assertRaises(Exception) as cm:
-            symlink.readlink(self.filename)
+            symlink.readlink(self.source_file)
+
+    def test_for_real_dir(self):
+        with self.assertRaises(Exception) as cm:
+            symlink.readlink(self.source_dir)
+
+    def test_for_not_exist_path(self):
+        with self.assertRaises(Exception) as cm:
+            symlink.readlink(self.not_exist_file)
+
+    def test_for_invalid_path(self):
+        with self.assertRaises(Exception) as cm:
+            symlink.readlink(self.invalid_path)
 
 if __name__ == "__main__":
     unittest.main()
