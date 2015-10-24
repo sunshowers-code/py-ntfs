@@ -32,26 +32,20 @@ def create(source, link_name):
 def issymlink(path):
     try:
         reparseinfo = junction.readreparseinfo(path)
+        return (reparseinfo.ReparseTag == junction.IO_REPARSE_TAG_SYMLINK)
     except OSError as e:
-        error_code = fs.GetLastError()
-        if error_code == ERROR_NOT_A_REPARSE_POINT:
-            return False
-        # default
         return False
 
-    if reparseinfo.ReparseTag != junction.IO_REPARSE_TAG_SYMLINK:
-        return False
-
-    attrs = fs.GetFileAttributes(path)
-    return bool(attrs & fs.FILE_ATTRIBUTE_REPARSE_POINT)
-    
 def readlink(path):
-    if not issymlink(path):
-        raise Exception("%s does not exist or is not a symbolic link" % path)
+    try:
+        not_symlink_exc = Exception("%s does not exist or is not a symbolic link" % path)
+        reparseinfo = junction.readreparseinfo(path)
+        if reparseinfo.ReparseTag != junction.IO_REPARSE_TAG_SYMLINK:
+            raise not_symlink_exc
+    except OSError as e:
+        raise not_symlink_exc
 
-    reparseinfo = junction.readreparseinfo(path)
-    name_buffer = reparseinfo.readable_SubstituteNameBuffer
-    
+    name_buffer = reparseinfo.readable_SubstituteNameBuffer    
     magic = name_buffer[0:2]
     if magic == '\x01\x00':
         # relative path

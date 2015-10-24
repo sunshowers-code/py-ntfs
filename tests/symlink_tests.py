@@ -92,6 +92,10 @@ class issymlink_Test(SymLinkTest):
 
     def test_for_not_exist_path(self):
         self.assertFalse(symlink.issymlink(self.invalid_path))
+    
+    def test_for_junction(self):
+        junction.create(self.source_dir, self.link_name_dir)
+        self.assertFalse(symlink.issymlink(self.link_name_dir))
 
 class readlink_Test(SymLinkTest):
     def test_absolute_path_for_file_symlink(self):
