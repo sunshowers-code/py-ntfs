@@ -58,6 +58,11 @@ class SymLinkTest(unittest.TestCase):
         except Exception as e:
             self.fail()
 
+class hasprivilege_Test(SymLinkTest):
+    def test_run(self):
+        retval = symlink.hasprivilege()
+        self.assertIn(retval, (True, False))
+    
 class create_Test(SymLinkTest):    
     def test_for_dir(self):
         self.createSymlink(self.source_dir, self.link_name_dir)        
