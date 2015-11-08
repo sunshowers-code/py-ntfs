@@ -8,6 +8,7 @@ from ctypes.wintypes import DWORD, HANDLE, BOOL
 
 LPDWORD = POINTER(DWORD)
 
+FILE_READ_ATTRIBUTES = 0x0080
 GENERIC_READ  = 0x80000000
 GENERIC_WRITE = 0x40000000
 
@@ -18,6 +19,7 @@ FILE_SHARE_DELETE = 0x00000004
 FILE_SUPPORTS_HARD_LINKS     = 0x00400000
 FILE_SUPPORTS_REPARSE_POINTS = 0x00000080
 
+FILE_ATTRIBUTE_NORMAL        = 0x00000080
 FILE_ATTRIBUTE_DIRECTORY     = 0x00000010
 FILE_ATTRIBUTE_REPARSE_POINT = 0x00000400
 
@@ -45,6 +47,11 @@ class BY_HANDLE_FILE_INFORMATION(ctypes.Structure):
                 ("nNumberOfLinks", DWORD),
                 ("nFileIndexHigh", DWORD),
                 ("nFileIndexLow", DWORD)]
+
+# https://msdn.microsoft.com/en-us/library/windows/desktop/ms679360
+GetLastError = ctypes.windll.kernel32.GetLastError
+GetLastError.argtypes = []
+GetLastError.restype = DWORD
 
 # http://msdn.microsoft.com/en-us/library/windows/desktop/aa363858
 CreateFile = ctypes.windll.kernel32.CreateFileW
@@ -84,6 +91,11 @@ DeviceIoControl.restype = BOOL
 CloseHandle = ctypes.windll.kernel32.CloseHandle
 CloseHandle.argtypes = [HANDLE]
 CloseHandle.restype = BOOL
+
+# http://msdn.microsoft.com/en-us/library/windows/desktop/aa363866
+CreateSymbolicLink = ctypes.windll.kernel32.CreateSymbolicLinkW
+CreateSymbolicLink.argtypes = (ctypes.c_wchar_p, ctypes.c_wchar_p, DWORD)
+CreateSymbolicLink.restype = BOOL
 
 def getfileinfo(path):
     """

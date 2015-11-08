@@ -8,14 +8,15 @@
 __all__ = ["create", "readlink", "unlink", "isjunction"]
 
 import os
-import fs
-from fs import CreateFile, GetFileAttributes, DeviceIoControl, CloseHandle
+from . import fs
+from .fs import CreateFile, GetFileAttributes, DeviceIoControl, CloseHandle
 
 import ctypes
 from ctypes import WinError, sizeof, byref
 from ctypes.wintypes import DWORD
 
 IO_REPARSE_TAG_MOUNT_POINT = 0xA0000003
+IO_REPARSE_TAG_SYMLINK = 0xA000000C
 
 FSCTL_SET_REPARSE_POINT    = 0x000900A4
 FSCTL_GET_REPARSE_POINT    = 0x000900A8
@@ -58,10 +59,23 @@ def new_junction_reparse_buffer(path=None):
                     ("SubstituteNameLength", ctypes.c_ushort),
                     ("PrintNameOffset", ctypes.c_ushort),
                     ("PrintNameLength", ctypes.c_ushort),
-                    ("SubstituteNameBuffer", ctypes.c_wchar * substnamebufferchars),
+                    ("SubstituteNameBuffer", ctypes.c_ushort * substnamebufferchars),
                     ("PrintNameBuffer", ctypes.c_wchar * 1)]
+                    
+        def buffer_to_string(self, buf):
+            readable_name_buffer = [chr(x) for x in buf]
+            readable_name = "".join(readable_name_buffer)
+            return readable_name.rstrip("\0")
+        
+        @property
+        def readable_PrintNameBuffer(self):
+            return self.buffer_to_string(self.PrintNameBuffer)
+        
+        @property    
+        def readable_SubstituteNameBuffer(self):
+            return self.buffer_to_string(self.SubstituteNameBuffer)
 
-    numpathbytes = (substnamebufferchars - 1) * sizeof(ctypes.c_wchar)
+    numpathbytes = (substnamebufferchars - 1) * sizeof(ctypes.c_ushort)
     # We can't really use sizeof on the struct because of packing issues.
     # Instead, calculate the size manually
     buffersize = (numpathbytes + (sizeof(ctypes.c_wchar) * 2) + 
@@ -70,6 +84,10 @@ def new_junction_reparse_buffer(path=None):
         buffer = REPARSE_DATA_BUFFER()
         buffer.ReparseTag = IO_REPARSE_TAG_MOUNT_POINT
     else:
+        tmp = REPARSE_DATA_BUFFER()
+        for i, x in enumerate(path):
+            tmp.SubstituteNameBuffer[i] = ord(x);
+
         buffer = REPARSE_DATA_BUFFER(
             IO_REPARSE_TAG_MOUNT_POINT,
             buffersize,
@@ -79,7 +97,7 @@ def new_junction_reparse_buffer(path=None):
             # substitute name offset, length
             numpathbytes + 2, 0,
             # print name
-            path,
+            tmp.SubstituteNameBuffer,
             # substitute name
             "")
 
@@ -157,6 +175,11 @@ def readlink(path):
     if not isjunction(path):
         raise Exception("%s does not exist or is not a junction" % path)
 
+    reparseinfo = readreparseinfo(path)
+    name_buffer = reparseinfo.readable_SubstituteNameBuffer
+    return unparsed_unconvert(name_buffer)
+
+def readreparseinfo(path):
     hlink = CreateFile(path, fs.GENERIC_READ, fs.FILE_SHARE_READ, None,
         fs.OPEN_EXISTING,
         fs.FILE_FLAG_OPEN_REPARSE_POINT | fs.FILE_FLAG_BACKUP_SEMANTICS,
@@ -180,7 +203,7 @@ def readlink(path):
         if res == 0:
             raise WinError()
 
-        return unparsed_unconvert(junctioninfo.SubstituteNameBuffer)
+        return junctioninfo
     finally:
         CloseHandle(hlink)
 
@@ -190,3 +213,22 @@ def unlink(path):
         raise Exception("%s does not exist or is not a junction" % path)
     # Just get rid of the directory
     os.rmdir(path)
+
+def showreparseinfo(reparseinfo):            
+    keys = [
+        "ReparseTag",
+        "ReparseDataLength",
+        "Reserved",
+        "SubstituteNameOffset",
+        "SubstituteNameLength",
+        "PrintNameOffset",
+        "PrintNameLength",
+    ]
+    for key in keys:
+        val = getattr(reparseinfo, key)
+        print("%s\t:%r" % (key, str(val)))
+
+    extra_keys = ["readable_PrintNameBuffer", "readable_SubstituteNameBuffer"]
+    for key in extra_keys:
+        val = getattr(reparseinfo, key)
+        print("%s\t:%r" % (key, str(val)))
