@@ -12,7 +12,8 @@ from . import junction
 from .fs import CreateSymbolicLink, GetLastError
 
 import ctypes
-from ctypes import WinError, wintypes
+from ctypes import WinError, wintypes, byref
+from ctypes.wintypes import HANDLE, DWORD
 
 ERROR_PRIVILEGE_NOT_HELD = 1314
 ERROR_NOT_A_REPARSE_POINT = 4390
@@ -185,12 +186,58 @@ def create(source, link_name):
     if res == 0:
         raise WinError()
 
+def win32_get_reparse_tag(hlink):
+    (junctioninfo, infolen) = junction.new_junction_reparse_buffer()
+    dummy = DWORD(0)
+    res = fs.DeviceIoControl(
+        hlink,
+        junction.FSCTL_GET_REPARSE_POINT,
+        None,
+        0,
+        byref(junctioninfo),
+        infolen,
+        byref(dummy),
+        None)
+    
+    if res == 0:
+        return (False, None)
+
+    return (True, junctioninfo.ReparseTag)
+        
 def issymlink(path):
-    try:
-        reparseinfo = junction.readreparseinfo(path)
-        return (reparseinfo.ReparseTag == junction.IO_REPARSE_TAG_SYMLINK)
-    except OSError as e:
+    # from python 3.5 Modules/posixmodule.c, win32_xstat_impl
+    reparse_tag = -1
+    
+    hFile = fs.CreateFile(
+        path,
+        fs.FILE_READ_ATTRIBUTES, # desired access
+        0, # share mode
+        None, # security attributes
+        fs.OPEN_EXISTING,
+        # FILE_FLAG_BACKUP_SEMANTICS is required to open a directory
+        # FILE_FLAG_OPEN_REPARSE_POINT does not follow the symlink.
+        # Because of this, calls like GetFinalPathNameByHandle will return
+        # the symlink path again and not the actual final path. 
+        fs.FILE_ATTRIBUTE_NORMAL | fs.FILE_FLAG_BACKUP_SEMANTICS| fs.FILE_FLAG_OPEN_REPARSE_POINT,
+        None)
+        
+    if hFile == fs.INVALID_HANDLE_VALUE:
         return False
+    else:
+        info = fs.BY_HANDLE_FILE_INFORMATION()
+        if not fs.GetFileInformationByHandle(hFile, byref(info)):
+            fs.CloseHandle(hFile)
+            return False
+        
+        if info.dwFileAttributes & fs.FILE_ATTRIBUTE_REPARSE_POINT:
+            success, reparse_tag = win32_get_reparse_tag(hFile)
+            if not success:
+                return False
+                
+        if not fs.CloseHandle(hFile):
+            return False
+
+        return (reparse_tag == junction.IO_REPARSE_TAG_SYMLINK)
 
 def readlink(path):
     try:

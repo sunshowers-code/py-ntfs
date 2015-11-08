@@ -34,7 +34,7 @@ class SymLinkTest(unittest.TestCase):
                 pass
 
     def assertSymlinkPrivilegeNotHeldException(self, e):
-        self.assertEqual(e.__class__, OSError)
+        self.assertIn(e.__class__, (OSError, WindowsError))
         if e.winerror != symlink.ERROR_PRIVILEGE_NOT_HELD:
             self.fail()
 
@@ -46,8 +46,14 @@ class SymLinkTest(unittest.TestCase):
         self.assertEqual(content_a, content_b)
 
     def assertBrokenLink(self, filepath):
-        self.assertEqual(os.path.exists(filepath), False)
-        self.assertEqual(os.path.lexists(filepath), True)
+        # works only python 3.x.
+        # Python 2.x can't understand windows symbolic link
+        from platform import python_version
+        if python_version().startswith("3"):
+            self.assertEqual(os.path.exists(filepath), False)
+            self.assertEqual(os.path.lexists(filepath), True)
+        else:
+            self.skipTest("python 2.x doesn't support os.path.exists with symbolic link")
 
     def createSymlink(self, source, link_name):
         try:
