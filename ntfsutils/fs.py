@@ -85,12 +85,8 @@ CloseHandle = ctypes.windll.kernel32.CloseHandle
 CloseHandle.argtypes = [HANDLE]
 CloseHandle.restype = BOOL
 
-def getfileinfo(path):
-    """
-    Return information for the file at the given path. This is going to be a
-    struct of type BY_HANDLE_FILE_INFORMATION.
-    """
-    hfile = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, None, OPEN_EXISTING, 0, None)
+def _getfileinfo(path, flags):
+    hfile = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, None, OPEN_EXISTING, flags, None)
     if hfile is None:
         raise WinError()
     info = BY_HANDLE_FILE_INFORMATION()
@@ -99,6 +95,20 @@ def getfileinfo(path):
     if rv == 0:
         raise WinError()
     return info
+
+def getdirinfo(path):
+    """
+    Return information for the directory at the given path. This is going to be a
+    struct of type BY_HANDLE_FILE_INFORMATION.
+    """
+    return _getfileinfo(path, FILE_FLAG_BACKUP_SEMANTICS)
+
+def getfileinfo(path):
+    """
+    Return information for the file at the given path. This is going to be a
+    struct of type BY_HANDLE_FILE_INFORMATION.
+    """
+    return _getfileinfo(path, 0)
 
 def getvolumeinfo(path):
     """
