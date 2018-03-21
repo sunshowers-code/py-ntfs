@@ -7,11 +7,15 @@ from unittest import TestCase
 class TestDir(TestCase):
     FOO = 'foo'
     FOO_CONTENTS = FOO
+    DIR = 'dir'
+    DIR_FILE = os.path.join(DIR, 'file')
+    DIR_FILE_CONTENTS = DIR_FILE
 
     def setUp(self):
         self._root_dir = tempfile.mkdtemp()
         self.pushd(self._root_dir)
         self.create(self.FOO, self.FOO_CONTENTS)
+        self.create(self.DIR_FILE, self.DIR_FILE_CONTENTS)
 
     def tearDown(self):
         self.popd()
