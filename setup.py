@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
-version = '0.1.3'
+version = '0.1.4'
 
 long_description = (
     'Detailed Documentation\n'

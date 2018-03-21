@@ -1,3 +1,9 @@
+0.1.4 (2018-03-21)
+==================
+
+- Add getdirinfo to get information for a directory at a given path.
+  [efiop]
+
 0.1.3 (2014-04-13)
 ==================
 
