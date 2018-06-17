@@ -86,7 +86,7 @@ CloseHandle.argtypes = [HANDLE]
 CloseHandle.restype = BOOL
 
 def _getfileinfo(path, flags):
-    hfile = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, None, OPEN_EXISTING, flags, None)
+    hfile = CreateFile(path, 0, FILE_SHARE_READ, None, OPEN_EXISTING, flags, None)
     if hfile is None:
         raise WinError()
     info = BY_HANDLE_FILE_INFORMATION()
