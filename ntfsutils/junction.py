@@ -8,8 +8,8 @@
 __all__ = ["create", "readlink", "unlink", "isjunction"]
 
 import os
-import fs
-from fs import CreateFile, GetFileAttributes, DeviceIoControl, CloseHandle
+import ntfsutils.fs as fs
+from ntfsutils.fs import CreateFile, GetFileAttributes, DeviceIoControl, CloseHandle
 
 import ctypes
 from ctypes import WinError, sizeof, byref

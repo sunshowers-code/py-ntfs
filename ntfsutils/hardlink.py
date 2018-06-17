@@ -6,7 +6,8 @@
 
 __all__ = ["create", "samefile"]
 
-import fs
+import ntfsutils.fs as fs
+
 import ctypes
 from ctypes import WinError
 from ctypes.wintypes import BOOL
