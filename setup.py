@@ -27,8 +27,6 @@ long_description = (
 install_requires=['setuptools']
 
 extra = {}
-if sys.version_info >= (3,):
-    extra['use_2to3'] = True
 
 setup(name='ntfsutils',
       version=version,
