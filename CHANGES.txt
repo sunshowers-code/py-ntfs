@@ -1,3 +1,10 @@
+0.1.5 (2022-01-10)
+==================
+
+- Remove use_2to3 option from setup.py, no longer supported by setuptools
+  (and also unnecessary).
+  [srand]
+
 0.1.4 (2018-03-21)
 ==================
 
@@ -8,7 +15,7 @@
 ==================
 
 - Don't use custom descriptions for WinError.
-  [sid0]
+  [sunshowers]
 
 0.1.2 (2013-01-25)
 ==================
@@ -22,7 +29,7 @@
 ==================
 
 - Fixed an issue with creating hardlinks.
-  [sid0]
+  [sunshowers]
 
 0.1 (2012-04-20)
 ================
