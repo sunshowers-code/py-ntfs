@@ -1,0 +1,32 @@
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+name: CI
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: [ '2.7', '3.x' ]
+      fail-fast: false
+    env:
+      RUSTFLAGS: -D warnings
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Build
+        run: python setup.py build
+      - name: Test
+        run: python -m unittest discover tests
