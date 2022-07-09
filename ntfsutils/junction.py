@@ -160,7 +160,7 @@ def readlink(path):
     if not isjunction(path):
         raise Exception("%s does not exist or is not a junction" % path)
 
-    hlink = CreateFile(path, fs.GENERIC_READ, fs.FILE_SHARE_READ, None,
+    hlink = CreateFile(path, 0, fs.FILE_SHARE_READ, None,
         fs.OPEN_EXISTING,
         fs.FILE_FLAG_OPEN_REPARSE_POINT | fs.FILE_FLAG_BACKUP_SEMANTICS,
         None)
