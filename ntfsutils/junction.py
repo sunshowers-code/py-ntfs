@@ -100,10 +100,13 @@ def unparsed_unconvert(path):
     return path
 
 def isjunction(path):
-    if not os.path.exists(path) or not fs.junctions_supported(path):
+    if not fs.junctions_supported(path):
         return False
 
     attrs = GetFileAttributes(path)
+    if attrs == DWORD(-1).value:
+        return False
+
     return bool((attrs & fs.FILE_ATTRIBUTE_DIRECTORY) and
                 (attrs & fs.FILE_ATTRIBUTE_REPARSE_POINT))
 
