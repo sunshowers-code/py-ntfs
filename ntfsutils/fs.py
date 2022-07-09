@@ -28,7 +28,7 @@ OPEN_EXISTING = 3
 
 MAX_PATH = 260
 
-INVALID_HANDLE_VALUE = -1
+INVALID_HANDLE_VALUE = HANDLE(-1).value
 
 class FILETIME(ctypes.Structure):
     _fields_ = [("dwLowDateTime", DWORD),
